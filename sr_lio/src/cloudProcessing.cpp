@@ -825,42 +825,82 @@ void cloudProcessing::groundRemoval()
      }
 }
 
+/**
+ * @brief 点云分割函数，将点云分为地面点和非地面点，并输出结果。
+ *
+ * @param[out] v_cloud_out 输出的分割后点云集合，包括地面点和非地面点。
+ *
+ * @details
+ * 该函数通过遍历激光雷达的扫描线束和水平扫描角度，对每个点进行处理。
+ * 点根据 `ground_mat` 和 `label_mat` 的信息被标记为地面点或非地面点，并存入输出点云集合 `v_cloud_out`。
+ * 同时，通过 `point_filter_num` 进行下采样，控制输出点云的密度。
+ *
+ * **主要变量说明：**
+ * - **`N_SCANS`**：激光雷达的垂直方向线束数量。
+ * - **`Horizon_SCANS`**：水平方向扫描角度的分辨率。
+ * - **`full_cloud`**：存储所有点云的容器，每个点包含坐标（raw_point）和标签（label）。
+ * - **`label_mat`**：标记矩阵，用于标记点云的类别。
+ *   - 值为 999999 的点被认为是无效点，不进行处理。
+ * - **`ground_mat`**：地面检测矩阵：
+ *   - 值为 1 表示地面点。
+ * - **`v_cloud_out`**：输出点云集合，包括地面点（label = 0）和非地面点（label = 1）。
+ * - **`point_filter_num`**：下采样因子，每 `point_filter_num` 个点输出一个点。
+ *
+ * **处理逻辑：**
+ * 1. 遍历所有线束（`i`）和每条线束的水平扫描点（`j`）。
+ * 2. 跳过标记为无效点（`label_mat = 999999`）的点。
+ * 3. 根据下采样因子 `point_filter_num` 控制点的输出频率。
+ * 4. 根据 `ground_mat` 判断是否为地面点：
+ *    - 如果是地面点，将点的 `label` 设为 0，并加入 `v_cloud_out`。
+ *    - 如果不是地面点且 `label_mat` 指定的点有效，将点的 `label` 设为 1，并加入 `v_cloud_out`。
+ * 5. 确保所有处理后的点没有 `NaN` 值。
+ */
 void cloudProcessing::cloudSegmentation(std::vector<point3D> &v_cloud_out)
 {
-     int num_points = 0;
+     int num_points = 0; // 记录已处理点的数量
 
+     // 遍历激光雷达的所有线束
      for (size_t i = 0; i < N_SCANS; ++i)
      {
           for (size_t j = 0; j < Horizon_SCANS; j++)
           {
+               // 跳过标记为无效点的点
                if (label_mat.at<int>(i, j) == 999999)
                     continue;
 
+               // 按照下采样因子过滤点
                if (num_points % point_filter_num != 0)
                {
                     num_points++;
                     continue;
                }
 
+               // 判断是否为地面点
                if (ground_mat.at<int8_t>(i, j) == 1)
                {
-                    full_cloud[j + i * Horizon_SCANS].label = 0;
-                    v_cloud_out.push_back(full_cloud[j + i * Horizon_SCANS]);
+                    // 地面点处理
+                    full_cloud[j + i * Horizon_SCANS].label = 0;              // 将标签设为地面点
+                    v_cloud_out.push_back(full_cloud[j + i * Horizon_SCANS]); // 加入输出点云集合
+
+                    // 检查点云数据是否存在 NaN 值
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.x()));
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.y()));
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.z()));
                }
+               // 非地面点处理
                else if (full_cloud[j + i * Horizon_SCANS].label >= 0)
                {
-                    assert(ground_mat.at<int8_t>(i, j) != 1);
-                    full_cloud[j + i * Horizon_SCANS].label = 1;
-                    v_cloud_out.push_back(full_cloud[j + i * Horizon_SCANS]);
+                    assert(ground_mat.at<int8_t>(i, j) != 1);                 // 确保点不是地面点
+                    full_cloud[j + i * Horizon_SCANS].label = 1;              // 将标签设为非地面点
+                    v_cloud_out.push_back(full_cloud[j + i * Horizon_SCANS]); // 加入输出点云集合
+
+                    // 检查点云数据是否存在 NaN 值
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.x()));
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.y()));
                     assert(!std::isnan(full_cloud[j + i * Horizon_SCANS].raw_point.z()));
                }
 
-               num_points++;
+               num_points++; // 增加已处理点的计数
           }
      }
 }

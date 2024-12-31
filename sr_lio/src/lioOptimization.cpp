@@ -28,7 +28,7 @@ void cloudFrame::release()
 {
     std::vector<point3D>().swap(point_frame);
 
-    if(p_state != nullptr)
+    if (p_state != nullptr)
         p_state->release();
 
     delete p_state;
@@ -38,17 +38,15 @@ void cloudFrame::release()
 
 estimationSummary::estimationSummary()
 {
-
 }
 
 void estimationSummary::release()
 {
-
 }
 
 lioOptimization::lioOptimization()
 {
-	allocateMemory();
+    allocateMemory();
 
     readParameters();
 
@@ -63,14 +61,14 @@ lioOptimization::lioOptimization()
     sub_imu_ori = nh.subscribe<sensor_msgs::Imu>(imu_topic, 500, &lioOptimization::imuHandler, this);
 
     path.header.stamp = ros::Time::now();
-    path.header.frame_id ="camera_init";
+    path.header.frame_id = "camera_init";
     points_world.reset(new pcl::PointCloud<pcl::PointXYZI>());
 
-    //options.recordParameters();
+    // options.recordParameters();
 }
 
 void lioOptimization::readParameters()
-{	
+{
     int para_int;
     double para_double;
     float para_float;
@@ -79,32 +77,47 @@ void lioOptimization::readParameters()
 
     // common
     nh.param<std::string>("common/lidar_topic", lidar_topic, "/points_raw");
-	nh.param<std::string>("common/imu_topic", imu_topic, "/imu_raw");
-    nh.param<int>("common/point_filter_num", para_int, 1);  cloud_pro->setPointFilterNum(para_int);
+    nh.param<std::string>("common/imu_topic", imu_topic, "/imu_raw");
+    nh.param<int>("common/point_filter_num", para_int, 1);
+    cloud_pro->setPointFilterNum(para_int);
     nh.param<std::vector<double>>("common/gravity_acc", v_G, std::vector<double>());
     nh.param<bool>("debug_output", debug_output, false);
     nh.param<std::string>("output_path", output_path, "");
 
     // LiDAR parameter
-    nh.param<int>("lidar_parameter/lidar_type", para_int, AVIA);  cloud_pro->setLidarType(para_int);
-    nh.param<int>("lidar_parameter/N_SCANS", para_int, 16);  cloud_pro->setNumScans(para_int);
-    nh.param<int>("lidar_parameter/Horizon_SCANS", para_int, 1800);  cloud_pro->setHorizonScans(para_int);
-    nh.param<float>("lidar_parameter/ang_res_x", para_float, 0.2);  cloud_pro->setAngResX(para_float);
-    nh.param<float>("lidar_parameter/ang_res_y", para_float, 1.33);  cloud_pro->setAngResY(para_float);
-    nh.param<float>("lidar_parameter/ang_bottom", para_float, 30.67);  cloud_pro->setAngBottom(para_float);
-    nh.param<int>("lidar_parameter/ground_scan_id", para_int, 20);  cloud_pro->setGroundScanInd(para_int);
+    nh.param<int>("lidar_parameter/lidar_type", para_int, AVIA);
+    cloud_pro->setLidarType(para_int);
+    nh.param<int>("lidar_parameter/N_SCANS", para_int, 16);
+    cloud_pro->setNumScans(para_int);
+    nh.param<int>("lidar_parameter/Horizon_SCANS", para_int, 1800);
+    cloud_pro->setHorizonScans(para_int);
+    nh.param<float>("lidar_parameter/ang_res_x", para_float, 0.2);
+    cloud_pro->setAngResX(para_float);
+    nh.param<float>("lidar_parameter/ang_res_y", para_float, 1.33);
+    cloud_pro->setAngResY(para_float);
+    nh.param<float>("lidar_parameter/ang_bottom", para_float, 30.67);
+    cloud_pro->setAngBottom(para_float);
+    nh.param<int>("lidar_parameter/ground_scan_id", para_int, 20);
+    cloud_pro->setGroundScanInd(para_int);
 
-    nh.param<int>("lidar_parameter/SCAN_RATE", para_int, 10);  cloud_pro->setScanRate(para_int);
-    nh.param<int>("lidar_parameter/time_unit", para_int, US);  cloud_pro->setTimeUnit(para_int);
-    nh.param<double>("lidar_parameter/blind", para_double, 0.01);  cloud_pro->setBlind(para_double);
+    nh.param<int>("lidar_parameter/SCAN_RATE", para_int, 10);
+    cloud_pro->setScanRate(para_int);
+    nh.param<int>("lidar_parameter/time_unit", para_int, US);
+    cloud_pro->setTimeUnit(para_int);
+    nh.param<double>("lidar_parameter/blind", para_double, 0.01);
+    cloud_pro->setBlind(para_double);
     nh.param<float>("lidar_parameter/det_range", det_range, 300.f);
     nh.param<double>("lidar_parameter/fov_degree", fov_deg, 180);
 
     // IMU parameter
-    nh.param<double>("imu_parameter/acc_cov", para_double, 0.1);  eskf_pro->setAccCov(para_double);
-    nh.param<double>("imu_parameter/gyr_cov", para_double, 0.1);  eskf_pro->setGyrCov(para_double);
-    nh.param<double>("imu_parameter/b_acc_cov", para_double, 0.0001);  eskf_pro->setBiasAccCov(para_double);
-    nh.param<double>("imu_parameter/b_gyr_cov", para_double, 0.0001);  eskf_pro->setBiasGyrCov(para_double);
+    nh.param<double>("imu_parameter/acc_cov", para_double, 0.1);
+    eskf_pro->setAccCov(para_double);
+    nh.param<double>("imu_parameter/gyr_cov", para_double, 0.1);
+    eskf_pro->setGyrCov(para_double);
+    nh.param<double>("imu_parameter/b_acc_cov", para_double, 0.0001);
+    eskf_pro->setBiasAccCov(para_double);
+    nh.param<double>("imu_parameter/b_gyr_cov", para_double, 0.0001);
+    eskf_pro->setBiasGyrCov(para_double);
 
     nh.param<bool>("imu_parameter/time_diff_enable", time_diff_enable, false);
 
@@ -125,15 +138,20 @@ void lioOptimization::readParameters()
     nh.param<double>("odometry_options/distance_error_threshold", options.distance_error_threshold, 5.0);
 
     nh.param<std::string>("odometry_options/motion_compensation", str_temp, "CONSTANT_VELOCITY");
-    if(str_temp == "IMU") options.motion_compensation = IMU;
-    else if(str_temp == "CONSTANT_VELOCITY") options.motion_compensation = CONSTANT_VELOCITY;
-    else std::cout << "The `motion_compensation` " << str_temp << " is not supported." << std::endl;
+    if (str_temp == "IMU")
+        options.motion_compensation = IMU;
+    else if (str_temp == "CONSTANT_VELOCITY")
+        options.motion_compensation = CONSTANT_VELOCITY;
+    else
+        std::cout << "The `motion_compensation` " << str_temp << " is not supported." << std::endl;
 
     nh.param<std::string>("odometry_options/initialization", str_temp, "INIT_IMU");
-    if(str_temp == "INIT_IMU") options.initialization = INIT_IMU;
-    else if(str_temp == "INIT_CONSTANT_VELOCITY") options.initialization = INIT_CONSTANT_VELOCITY;
-    else std::cout << "The `state_initialization` " << str_temp << " is not supported." << std::endl;
-
+    if (str_temp == "INIT_IMU")
+        options.initialization = INIT_IMU;
+    else if (str_temp == "INIT_CONSTANT_VELOCITY")
+        options.initialization = INIT_CONSTANT_VELOCITY;
+    else
+        std::cout << "The `state_initialization` " << str_temp << " is not supported." << std::endl;
 
     icpOptions optimize_options;
     nh.param<int>("icp_options/threshold_voxel_occupancy", options.optimize_options.threshold_voxel_occupancy, 1);
@@ -198,7 +216,7 @@ void lioOptimization::initialValue()
     // loop closing
 }
 
-void lioOptimization::addPointToMap(voxelHashMap &map, point3D &point3d, double voxel_size, int max_num_points_in_voxel, double min_distance_points, int min_num_points, cloudFrame* p_frame)
+void lioOptimization::addPointToMap(voxelHashMap &map, point3D &point3d, double voxel_size, int max_num_points_in_voxel, double min_distance_points, int min_num_points, cloudFrame *p_frame)
 {
     globalPoint point;
     point.setPosition(point3d.point);
@@ -211,11 +229,12 @@ void lioOptimization::addPointToMap(voxelHashMap &map, point3D &point3d, double 
 
     voxelHashMap::iterator search = map.find(voxel(kx, ky, kz));
 
-    if(search != map.end())
+    if (search != map.end())
     {
         auto &voxel_block = (search.value());
 
-        if(!voxel_block.IsFull()) {
+        if (!voxel_block.IsFull())
+        {
             double sq_dist_min_to_points = 10 * voxel_size * voxel_size;
             for (int i(0); i < voxel_block.NumPoints(); ++i)
             {
@@ -226,9 +245,9 @@ void lioOptimization::addPointToMap(voxelHashMap &map, point3D &point3d, double 
                     sq_dist_min_to_points = sq_dist;
                 }
             }
-            if(sq_dist_min_to_points > (min_distance_points * min_distance_points))
+            if (sq_dist_min_to_points > (min_distance_points * min_distance_points))
             {
-                if(min_num_points <= 0 || voxel_block.NumPoints() >= min_num_points)
+                if (min_num_points <= 0 || voxel_block.NumPoints() >= min_num_points)
                 {
                     voxel_block.AddPoint(point);
                     addPointToPcl(points_world, point);
@@ -238,23 +257,23 @@ void lioOptimization::addPointToMap(voxelHashMap &map, point3D &point3d, double 
     }
     else
     {
-        if(min_num_points <= 0){
+        if (min_num_points <= 0)
+        {
             voxelBlock block(max_num_points_in_voxel);
             block.AddPoint(point);
             map[voxel(kx, ky, kz)] = std::move(block);
         }
-
     }
 }
 
-void lioOptimization::addPointsToMap(voxelHashMap &map, cloudFrame* p_frame, double voxel_size, int max_num_points_in_voxel, double min_distance_points, int min_num_points)
+void lioOptimization::addPointsToMap(voxelHashMap &map, cloudFrame *p_frame, double voxel_size, int max_num_points_in_voxel, double min_distance_points, int min_num_points)
 {
-    for (auto &point: p_frame->point_frame)
+    for (auto &point : p_frame->point_frame)
     {
         if (point.is_dynamic == false)
         {
             addPointToMap(map, point, voxel_size, max_num_points_in_voxel, min_distance_points, min_num_points, p_frame);
-            
+
             if (point.is_undecided == false)
                 addPointToTrueMap(voxel_map_true, point, voxel_size, max_num_points_in_voxel, min_distance_points, min_num_points);
         }
@@ -266,15 +285,17 @@ void lioOptimization::addPointsToMap(voxelHashMap &map, cloudFrame* p_frame, dou
 void lioOptimization::removePointsFarFromLocation(voxelHashMap &map, const Eigen::Vector3d &location, double distance)
 {
     std::vector<voxel> voxels_to_erase;
-    for (auto &pair: map) {
+    for (auto &pair : map)
+    {
         globalPoint global_point = pair.second.points[0];
         Eigen::Vector3d pt = global_point.getPosition();
 
-        if ((pt - location).squaredNorm() > (distance * distance)) {
+        if ((pt - location).squaredNorm() > (distance * distance))
+        {
             voxels_to_erase.push_back(pair.first);
         }
     }
-    for (auto &vox: voxels_to_erase)
+    for (auto &vox : voxels_to_erase)
         map.erase(vox);
 
     std::vector<voxel>().swap(voxels_to_erase);
@@ -283,18 +304,19 @@ void lioOptimization::removePointsFarFromLocation(voxelHashMap &map, const Eigen
 size_t lioOptimization::mapSize(const voxelHashMap &map)
 {
     size_t map_size(0);
-    for (auto &itr_voxel_map: map) {
+    for (auto &itr_voxel_map : map)
+    {
         map_size += (itr_voxel_map.second).NumPoints();
     }
     return map_size;
 }
 
-void lioOptimization::standardCloudHandler(const sensor_msgs::PointCloud2::ConstPtr &msg) 
+void lioOptimization::standardCloudHandler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
     double sample_size = index_frame < options.init_num_frames ? options.init_voxel_size : options.voxel_size;
 
     assert(msg->header.stamp.toSec() > last_time_lidar);
-    
+
     std::vector<point3D> v_point_cloud;
     double dt_offset;
 
@@ -337,7 +359,7 @@ std::vector<std::pair<std::pair<std::vector<sensor_msgs::ImuConstPtr>, std::vect
 
     while (true)
     {
-        if(imu_buffer.size() < 60 || lidar_buffer.size() < 2 || time_buffer.size() < 2)
+        if (imu_buffer.size() < 60 || lidar_buffer.size() < 2 || time_buffer.size() < 2)
             return measurements;
 
         if (!(imu_buffer.back()->header.stamp.toSec() > time_buffer.front().first + time_buffer.front().second))
@@ -401,7 +423,7 @@ std::vector<std::pair<std::pair<std::vector<sensor_msgs::ImuConstPtr>, std::vect
 
 void lioOptimization::makePointTimestamp(std::vector<point3D> &sweep, double time_sweep_begin, double time_sweep_end)
 {
-    if(cloud_pro->isPointTimeEnable())
+    if (cloud_pro->isPointTimeEnable())
     {
         return;
     }
@@ -413,8 +435,10 @@ void lioOptimization::makePointTimestamp(std::vector<point3D> &sweep, double tim
 
         while (iter != sweep.end())
         {
-            if((*iter).timestamp > time_sweep_end) iter = sweep.erase(iter);
-            else if((*iter).timestamp < time_sweep_begin) iter = sweep.erase(iter);
+            if ((*iter).timestamp > time_sweep_end)
+                iter = sweep.erase(iter);
+            else if ((*iter).timestamp < time_sweep_begin)
+                iter = sweep.erase(iter);
             else
             {
                 (*iter).relative_time = (*iter).timestamp - time_sweep_begin;
@@ -426,7 +450,7 @@ void lioOptimization::makePointTimestamp(std::vector<point3D> &sweep, double tim
     }
 }
 
-cloudFrame* lioOptimization::buildFrame(std::vector<point3D> &const_frame, state *cur_state, double timestamp_begin, double timestamp_offset)
+cloudFrame *lioOptimization::buildFrame(std::vector<point3D> &const_frame, state *cur_state, double timestamp_begin, double timestamp_offset)
 {
     std::vector<point3D> frame(const_frame);
 
@@ -440,7 +464,8 @@ cloudFrame* lioOptimization::buildFrame(std::vector<point3D> &const_frame, state
 
     makePointTimestamp(frame, timestamp_begin, timestamp_begin + timestamp_offset);
 
-    if (index_frame <= 2) {
+    if (index_frame <= 2)
+    {
         for (auto &point_temp : frame)
             point_temp.alpha_time = 1.0;
     }
@@ -452,14 +477,17 @@ cloudFrame* lioOptimization::buildFrame(std::vector<point3D> &const_frame, state
 
     transformAllImuPoint(frame, imu_states, R_imu_lidar, t_imu_lidar);
 
-    if (index_frame > 2) {
-        for (auto &point_temp: frame) {
+    if (index_frame > 2)
+    {
+        for (auto &point_temp : frame)
+        {
             transformPoint(point_temp, cur_state->rotation, cur_state->translation, R_imu_lidar, t_imu_lidar);
         }
     }
     else
     {
-        for (auto &point_temp: frame) {
+        for (auto &point_temp : frame)
+        {
             Eigen::Quaterniond q_identity = Eigen::Quaterniond::Identity();
             Eigen::Vector3d t_zero = Eigen::Vector3d::Zero();
             transformPoint(point_temp, q_identity, t_zero, R_imu_lidar, t_imu_lidar);
@@ -491,14 +519,14 @@ void lioOptimization::stateInitialization(state *cur_state)
     {
         if (options.initialization == INIT_CONSTANT_VELOCITY)
         {
-            Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                    all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
+            Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                            all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
 
-            Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation + 
-                                         all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                                         all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * 
-                                         (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation - 
-                                         all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
+            Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation +
+                                         all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() *
+                                             (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation -
+                                              all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
 
             cur_state->rotation = q_next_end;
             cur_state->translation = t_next_end;
@@ -512,14 +540,14 @@ void lioOptimization::stateInitialization(state *cur_state)
             }
             else
             {
-                Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                        all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
+                Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                                all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
 
-                Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation + 
-                                             all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * 
-                                             (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation - 
-                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
+                Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation +
+                                             all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                                 all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() *
+                                                 (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation -
+                                                  all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
 
                 cur_state->rotation = q_next_end;
                 cur_state->translation = t_next_end;
@@ -535,14 +563,14 @@ void lioOptimization::stateInitialization(state *cur_state)
     {
         if (options.initialization == INIT_CONSTANT_VELOCITY)
         {
-            Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                    all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
+            Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                            all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
 
-            Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation + 
-                                         all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                                         all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * 
-                                         (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation - 
-                                         all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
+            Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation +
+                                         all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() *
+                                             (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation -
+                                              all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
 
             cur_state->rotation = q_next_end;
             cur_state->translation = t_next_end;
@@ -556,14 +584,14 @@ void lioOptimization::stateInitialization(state *cur_state)
             }
             else
             {
-                Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                        all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
+                Eigen::Quaterniond q_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                                all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation;
 
-                Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation + 
-                                             all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation * 
-                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() * 
-                                             (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation - 
-                                             all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
+                Eigen::Vector3d t_next_end = all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation +
+                                             all_cloud_frame[all_cloud_frame.size() - 1]->p_state->rotation *
+                                                 all_cloud_frame[all_cloud_frame.size() - 2]->p_state->rotation.inverse() *
+                                                 (all_cloud_frame[all_cloud_frame.size() - 1]->p_state->translation -
+                                                  all_cloud_frame[all_cloud_frame.size() - 2]->p_state->translation);
 
                 cur_state->rotation = q_next_end;
                 cur_state->translation = t_next_end;
@@ -588,7 +616,7 @@ optimizeSummary lioOptimization::stateEstimation(cloudFrame *p_frame)
 
     optimizeSummary optimize_summary;
 
-    if(p_frame->frame_id > 1)
+    if (p_frame->frame_id > 1)
     {
         bool good_enough_registration = false;
         double sample_voxel_size = p_frame->frame_id < options.init_num_frames ? options.init_sample_voxel_size : options.sample_voxel_size;
@@ -596,7 +624,7 @@ optimizeSummary lioOptimization::stateEstimation(cloudFrame *p_frame)
 
         optimize_summary = optimize(p_frame, optimize_options, sample_voxel_size);
 
-        if(!optimize_summary.success)
+        if (!optimize_summary.success)
         {
             return optimize_summary;
         }
@@ -617,7 +645,7 @@ optimizeSummary lioOptimization::stateEstimation(cloudFrame *p_frame)
     // loop closing
 
     addPointsToMap(voxel_map, p_frame, kSizeVoxelMap, kMaxNumPointsInVoxel, kMinDistancePoints);
-  
+
     decidePoints(optimize_options, p_frame);
     addDecidedPointsToTrueMap(kSizeVoxelMap, kMaxNumPointsInVoxel, kMinDistancePoints);
 
@@ -642,11 +670,12 @@ void lioOptimization::addPointToTrueMap(voxelHashMap &map, point3D &point3d, dou
 
     voxelHashMap::iterator search = map.find(voxel(kx, ky, kz));
 
-    if(search != map.end())
+    if (search != map.end())
     {
         auto &voxel_block = (search.value());
 
-        if(!voxel_block.IsFull()) {
+        if (!voxel_block.IsFull())
+        {
             double sq_dist_min_to_points = 10 * voxel_size * voxel_size;
             for (int i(0); i < voxel_block.NumPoints(); ++i)
             {
@@ -657,9 +686,9 @@ void lioOptimization::addPointToTrueMap(voxelHashMap &map, point3D &point3d, dou
                     sq_dist_min_to_points = sq_dist;
                 }
             }
-            if(sq_dist_min_to_points > (min_distance_points * min_distance_points))
+            if (sq_dist_min_to_points > (min_distance_points * min_distance_points))
             {
-                if(min_num_points <= 0 || voxel_block.NumPoints() >= min_num_points)
+                if (min_num_points <= 0 || voxel_block.NumPoints() >= min_num_points)
                 {
                     voxel_block.AddPoint(point);
                     points_vec_true.push_back(&voxel_block.points.back());
@@ -670,99 +699,139 @@ void lioOptimization::addPointToTrueMap(voxelHashMap &map, point3D &point3d, dou
     }
     else
     {
-        if(min_num_points <= 0){
+        if (min_num_points <= 0)
+        {
             voxelBlock block(max_num_points_in_voxel);
             block.AddPoint(point);
             map[voxel(kx, ky, kz)] = std::move(block);
             points_vec_true.push_back(&map[voxel(kx, ky, kz)].points.back());
             // addPointToPcl(points_world, point);
         }
-
     }
 }
 
+/**
+ * @brief 决策点的状态，根据当前帧的位姿和点的分布信息，判断点是动态点还是静态点。
+ *
+ * @param[in] cur_icp_options 当前ICP优化选项，包括初始化帧数、邻域大小等参数。
+ * @param[in] p_frame 当前点云帧的相关信息，包括帧ID和当前帧的状态。
+ *
+ * @details
+ * 该函数遍历所有未决策的点（`points_undecided`），根据以下条件判断点的状态：
+ * - 点是否在当前帧的邻域范围内。
+ * - 点所在体素的点数和地面点比例。
+ * - 点在邻域中被观测的次数。
+ *
+ * **主要逻辑：**
+ * 1. 根据点与当前帧位置的距离判断是否在处理范围内。
+ * 2. 使用体素哈希表（`voxel_map_true`）查找点所在的体素：
+ *    - 如果体素中有足够的点：
+ *      - 如果体素内的地面点比例超过阈值，则标记该点为动态点。
+ *      - 否则标记为静态点。
+ *    - 如果体素点数不足，则增加决策计数。
+ * 3. 如果点多次被观察到但仍未决策，则标记为动态点。
+ * 4. 如果点多次未在视野范围内，则移除该点。
+ *
+ * **变量说明：**
+ * - **`nb_voxels_visited`**：初始化帧时的体素邻域范围。
+ * - **`kMinNumNeighbors`**：体素中最低邻居点数。
+ * - **`kThresholdCapacity`**：体素点数的阈值。
+ * - **`voxel_size`**：体素的大小。
+ * - **`points_undecided`**：未决策点的集合。
+ * - **`voxel_map_true`**：存储体素的哈希表，每个体素记录包含的点信息。
+ * - **`is_dynamic`**：标记点是否为动态点。
+ * - **`is_undecided`**：标记点是否仍未决策。
+ * - **`num_decided`**：记录点被决策的次数。
+ * - **`num_out_view`**：记录点未在视野范围内的次数。
+ */
 void lioOptimization::decidePoints(const icpOptions &cur_icp_options, cloudFrame *p_frame)
 {
+    // 初始化体素邻域范围、体素容量阈值、体素大小等参数
     const short nb_voxels_visited = p_frame->frame_id < cur_icp_options.init_num_frames ? 2 : cur_icp_options.voxel_neighborhood;
     const int kMinNumNeighbors = cur_icp_options.min_number_neighbors;
     const int kThresholdCapacity = p_frame->frame_id < cur_icp_options.init_num_frames ? 1 : cur_icp_options.threshold_voxel_occupancy;
     const double voxel_size = options.optimize_options.size_voxel_map;
 
+    // 遍历未决策点集合
     std::vector<point3D>::iterator iter = points_undecided.begin();
 
     while (iter != points_undecided.end())
     {
+        // 计算点到当前帧位置的距离
         Eigen::Vector3d distance = (*iter).point - p_frame->p_state->translation;
 
-        if (distance.norm() < 30.0)
+        if (distance.norm() < 30.0) // 如果点在30米范围内
         {
+            // 计算点所在的体素坐标
             short kx = static_cast<short>((*iter).point.x() / voxel_size);
             short ky = static_cast<short>((*iter).point.y() / voxel_size);
             short kz = static_cast<short>((*iter).point.z() / voxel_size);
 
+            // 在体素哈希表中查找体素
             voxelHashMap::iterator search = voxel_map_true.find(voxel(kx, ky, kz));
 
-            if(search != voxel_map_true.end())
+            if (search != voxel_map_true.end()) // 如果体素存在
             {
                 auto &voxel_block = (search.value());
 
-                if(voxel_block.NumPoints() > 5)
+                if (voxel_block.NumPoints() > 5) // 如果体素点数超过阈值
                 {
-                    if ((*iter).label > 0)
+                    if ((*iter).label > 0) // 如果点的标签大于0
                     {
                         int num_ground = 0;
 
+                        // 统计体素内的地面点数量
                         for (int i = 0; i < voxel_block.NumPoints(); i++)
                             if (voxel_block.points[i].getLabel() == 0)
                                 num_ground++;
 
                         double ratio_ground = (double)num_ground / (double)voxel_block.NumPoints();
 
-                        if (ratio_ground > 0.1)
+                        if (ratio_ground > 0.1) // 如果地面点比例大于0.1
                         {
                             (*iter).is_undecided = false;
-                            (*iter).is_dynamic = true;
-                            iter = points_undecided.erase(iter);
+                            (*iter).is_dynamic = true;           // 标记为动态点
+                            iter = points_undecided.erase(iter); // 移除点
                             continue;
                         }
                         else
                         {
-                            (*iter).is_undecided = false;
+                            (*iter).is_undecided = false; // 标记为静态点
                         }
                     }
                 }
-                else
+                else // 如果体素点数不足
                 {
-                    (*iter).num_decided++;
-                    if ((*iter).num_decided >= 1)
+                    (*iter).num_decided++;        // 增加决策计数
+                    if ((*iter).num_decided >= 1) // 如果决策次数超过1次
                     {
                         (*iter).is_undecided = false;
-                        (*iter).is_dynamic = true;
-                        iter = points_undecided.erase(iter);
+                        (*iter).is_dynamic = true;           // 标记为动态点
+                        iter = points_undecided.erase(iter); // 移除点
                         continue;
                     }
                 }
             }
-            else
+            else // 如果体素不存在
             {
-                (*iter).num_decided++;
-                if ((*iter).num_decided >= 2)
+                (*iter).num_decided++;        // 增加决策计数
+                if ((*iter).num_decided >= 2) // 如果决策次数超过2次
                 {
-                    (*iter).is_undecided = false;
+                    (*iter).is_undecided = false; // 标记为静态点
                 }
             }
         }
-        else
+        else // 如果点在30米范围外
         {
-            (*iter).num_out_view++;
-            if ((*iter).num_out_view >= 5)
+            (*iter).num_out_view++;        // 增加出视野计数
+            if ((*iter).num_out_view >= 5) // 如果出视野次数超过5次
             {
                 (*iter).is_undecided = false;
-                iter = points_undecided.erase(iter);
+                iter = points_undecided.erase(iter); // 移除点
                 continue;
             }
         }
-        iter++;
+        iter++; // 处理下一个点
     }
 }
 
@@ -794,7 +863,7 @@ void lioOptimization::process(std::vector<point3D> &const_frame, double timestam
     optimizeSummary summary = stateEstimation(p_frame);
 
     std::cout << "after solution: " << std::endl;
-    std::cout << "rotation: " << p_frame->p_state->rotation.x() << " " << p_frame->p_state->rotation.y() << " " 
+    std::cout << "rotation: " << p_frame->p_state->rotation.x() << " " << p_frame->p_state->rotation.y() << " "
               << p_frame->p_state->rotation.z() << " " << p_frame->p_state->rotation.w() << std::endl;
     std::cout << "translation: " << p_frame->p_state->translation.x() << " " << p_frame->p_state->translation.y() << " " << p_frame->p_state->translation.z() << std::endl;
     std::cout << "gravity = " << G.x() << " " << G.y() << " " << G.z() << std::endl;
@@ -802,9 +871,9 @@ void lioOptimization::process(std::vector<point3D> &const_frame, double timestam
     dt_sum = 0;
 
     publish_odometry(pub_odom, p_frame);
-    publish_path(pub_path, p_frame);   
+    publish_path(pub_path, p_frame);
 
-    if(debug_output)
+    if (debug_output)
     {
         pcl::PointCloud<pcl::PointXYZINormal>::Ptr p_cloud_temp;
         p_cloud_temp.reset(new pcl::PointCloud<pcl::PointXYZINormal>());
@@ -840,9 +909,8 @@ void lioOptimization::process(std::vector<point3D> &const_frame, double timestam
             num_remove++;
         }
     }
-    
 
-    for(int i = 0; i < all_cloud_frame.size(); i++)
+    for (int i = 0; i < all_cloud_frame.size(); i++)
         all_cloud_frame[i]->id = all_cloud_frame[i]->id - num_remove;
 }
 
@@ -856,7 +924,7 @@ void lioOptimization::recordSinglePose(cloudFrame *p_frame)
     foutC << std::fixed << p_frame->time_sweep_end << " ";
     foutC << p_frame->p_state->translation.x() << " " << p_frame->p_state->translation.y() << " " << p_frame->p_state->translation.z() << " ";
     foutC << p_frame->p_state->rotation.x() << " " << p_frame->p_state->rotation.y() << " " << p_frame->p_state->rotation.z() << " " << p_frame->p_state->rotation.w();
-    foutC << std::endl; 
+    foutC << std::endl;
 
     foutC.close();
 
@@ -869,7 +937,7 @@ void lioOptimization::recordSinglePose(cloudFrame *p_frame)
 
         foutC2 << std::fixed << p_frame->time_sweep_end << " ";
         foutC2 << p_frame->p_state->velocity.x() << " " << p_frame->p_state->velocity.y() << " " << p_frame->p_state->velocity.z();
-        foutC2 << std::endl; 
+        foutC2 << std::endl;
 
         foutC2.close();
 
@@ -881,40 +949,40 @@ void lioOptimization::recordSinglePose(cloudFrame *p_frame)
         foutC3 << std::fixed << p_frame->time_sweep_end << " ";
         foutC3 << p_frame->p_state->ba.x() << " " << p_frame->p_state->ba.y() << " " << p_frame->p_state->ba.z() << " ";
         foutC3 << p_frame->p_state->bg.x() << " " << p_frame->p_state->bg.y() << " " << p_frame->p_state->bg.z();
-        foutC3 << std::endl; 
+        foutC3 << std::endl;
 
         foutC3.close();
     }
 }
 
-void lioOptimization::set_posestamp(geometry_msgs::PoseStamped &body_pose_out,cloudFrame *p_frame)
+void lioOptimization::set_posestamp(geometry_msgs::PoseStamped &body_pose_out, cloudFrame *p_frame)
 {
     body_pose_out.pose.position.x = p_frame->p_state->translation.x();
     body_pose_out.pose.position.y = p_frame->p_state->translation.y();
     body_pose_out.pose.position.z = p_frame->p_state->translation.z();
-    
+
     body_pose_out.pose.orientation.x = p_frame->p_state->rotation.x();
     body_pose_out.pose.orientation.y = p_frame->p_state->rotation.y();
     body_pose_out.pose.orientation.z = p_frame->p_state->rotation.z();
     body_pose_out.pose.orientation.w = p_frame->p_state->rotation.w();
 }
 
-void lioOptimization::publish_path(ros::Publisher pub_path,cloudFrame *p_frame)
+void lioOptimization::publish_path(ros::Publisher pub_path, cloudFrame *p_frame)
 {
-    set_posestamp(msg_body_pose,p_frame);
+    set_posestamp(msg_body_pose, p_frame);
     msg_body_pose.header.stamp = ros::Time().fromSec(p_frame->time_sweep_end);
     msg_body_pose.header.frame_id = "camera_init";
 
     static int i = 0;
     i++;
-    if (i % 10 == 0) 
+    if (i % 10 == 0)
     {
         path.poses.push_back(msg_body_pose);
         pub_path.publish(path);
     }
 }
 
-void lioOptimization::publishCLoudWorld(ros::Publisher &pub_cloud_world, pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_points, cloudFrame* p_frame)
+void lioOptimization::publishCLoudWorld(ros::Publisher &pub_cloud_world, pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_points, cloudFrame *p_frame)
 {
     sensor_msgs::PointCloud2 laserCloudmsg;
     pcl::toROSMsg(*pcl_points, laserCloudmsg);
@@ -923,10 +991,10 @@ void lioOptimization::publishCLoudWorld(ros::Publisher &pub_cloud_world, pcl::Po
     pub_cloud_world.publish(laserCloudmsg);
 }
 
-void lioOptimization::addPointToPcl(pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_points, globalPoint& point)
+void lioOptimization::addPointToPcl(pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_points, globalPoint &point)
 {
     pcl::PointXYZI cloudTemp;
-    
+
     cloudTemp.x = point.getPosition().x();
     cloudTemp.y = point.getPosition().y();
     cloudTemp.z = point.getPosition().z();
@@ -934,13 +1002,12 @@ void lioOptimization::addPointToPcl(pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_poi
     if (point.getLabel() == 0)
         cloudTemp.intensity = 10;
     else
-        cloudTemp.intensity = 50/*50 * (cloudTemp.z - p_frame->p_state->translation.z())*/;
+        cloudTemp.intensity = 50 /*50 * (cloudTemp.z - p_frame->p_state->translation.z())*/;
     // cloudTemp.intensity = (double)point.getLabel();
     pcl_points->points.push_back(cloudTemp);
 }
 
-
-void lioOptimization::publish_odometry(const ros::Publisher & pubOdomAftMapped, cloudFrame *p_frame)
+void lioOptimization::publish_odometry(const ros::Publisher &pubOdomAftMapped, cloudFrame *p_frame)
 {
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw(p_frame->p_state->rotation.z(), -p_frame->p_state->rotation.x(), -p_frame->p_state->rotation.y());
 
@@ -959,12 +1026,12 @@ void lioOptimization::publish_odometry(const ros::Publisher & pubOdomAftMapped, 
     laserOdometryTrans.frame_id_ = "/camera_init";
     laserOdometryTrans.child_frame_id_ = "/laser_odom";
     laserOdometryTrans.stamp_ = ros::Time().fromSec(p_frame->time_sweep_end);
-    laserOdometryTrans.setRotation(tf::Quaternion(p_frame->p_state->rotation.x(), 
-                                                  p_frame->p_state->rotation.y(), 
-                                                  p_frame->p_state->rotation.z(), 
+    laserOdometryTrans.setRotation(tf::Quaternion(p_frame->p_state->rotation.x(),
+                                                  p_frame->p_state->rotation.y(),
+                                                  p_frame->p_state->rotation.z(),
                                                   p_frame->p_state->rotation.w()));
-    laserOdometryTrans.setOrigin(tf::Vector3(p_frame->p_state->translation.x(), 
-                                             p_frame->p_state->translation.y(), 
+    laserOdometryTrans.setOrigin(tf::Vector3(p_frame->p_state->translation.x(),
+                                             p_frame->p_state->translation.y(),
                                              p_frame->p_state->translation.z()));
     tfBroadcaster.sendTransform(laserOdometryTrans);
 }
@@ -973,7 +1040,8 @@ void lioOptimization::run()
 {
     std::vector<std::pair<std::pair<std::vector<sensor_msgs::ImuConstPtr>, std::vector<point3D>>, std::pair<double, double>>> measurements = getMeasurements();
 
-    if(measurements.size() == 0) return;
+    if (measurements.size() == 0)
+        return;
 
     for (auto &measurement : measurements)
     {
@@ -989,8 +1057,8 @@ void lioOptimization::run()
                 double time_imu = imu_msg->header.stamp.toSec();
 
                 if (time_imu <= time_frame)
-                { 
-                    if(current_time < 0)
+                {
+                    if (current_time < 0)
                         current_time = measurement.second.first;
 
                     current_time = time_imu;
@@ -1000,7 +1068,7 @@ void lioOptimization::run()
                     rx = imu_msg->angular_velocity.x;
                     ry = imu_msg->angular_velocity.y;
                     rz = imu_msg->angular_velocity.z;
-                    
+
                     imu_meas.emplace_back(current_time, std::make_pair(Eigen::Vector3d(rx, ry, rz), Eigen::Vector3d(dx, dy, dz)));
                 }
                 else
@@ -1053,12 +1121,13 @@ void lioOptimization::run()
             double time_imu = imu_msg->header.stamp.toSec();
 
             if (time_imu <= time_frame)
-            { 
-                if(current_time < 0)
+            {
+                if (current_time < 0)
                     current_time = measurement.second.first;
                 double dt = time_imu - current_time;
 
-                if(dt < -1e-6) continue;
+                if (dt < -1e-6)
+                    continue;
                 assert(dt >= 0);
                 current_time = time_imu;
                 dx = imu_msg->linear_acceleration.x;
@@ -1067,7 +1136,7 @@ void lioOptimization::run()
                 rx = imu_msg->angular_velocity.x;
                 ry = imu_msg->angular_velocity.y;
                 rz = imu_msg->angular_velocity.z;
-                
+
                 imuState imu_state_temp;
 
                 imu_state_temp.timestamp = current_time;
@@ -1122,7 +1191,7 @@ void lioOptimization::run()
         process(cut_sweep, measurement.second.first, measurement.second.second);
 
         imu_states.clear();
-        
+
         last_time_frame = time_frame;
         index_frame++;
 
@@ -1130,12 +1199,11 @@ void lioOptimization::run()
     }
 }
 
-
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     ros::init(argc, argv, "lio_optimization");
     ros::Time::init();
-    
+
     lioOptimization LIO;
 
     ros::Rate rate(200);
@@ -1152,17 +1220,17 @@ int main(int argc, char** argv)
 }
 
 // loop closing
-void lioOptimization::pubLocalMap(cloudFrame* p_frame)
+void lioOptimization::pubLocalMap(cloudFrame *p_frame)
 {
-    for (auto &point: p_frame->point_frame)
+    for (auto &point : p_frame->point_frame)
     {
         // if (point.is_dynamic == false)
         // {
-            globalPoint global_point;
-            global_point.setPosition(point.raw_point);
-            global_point.setLabel(point.label);
-            global_point.setDynamic(point.is_dynamic);
-            addPointToPcl(loop_map, global_point);
+        globalPoint global_point;
+        global_point.setPosition(point.raw_point);
+        global_point.setLabel(point.label);
+        global_point.setDynamic(point.is_dynamic);
+        addPointToPcl(loop_map, global_point);
         // }
     }
     publishCLoudWorld(pub_loop_map, loop_map, p_frame);
